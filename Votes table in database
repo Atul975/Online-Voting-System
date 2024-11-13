@@ -1,0 +1,65 @@
+package com.example.votingsystem.model;
+
+import javax.persistence.*;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "votes")
+public class Vote {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "candidate_id", nullable = false)
+    private Candidate candidate;
+
+    @Column(nullable = false, length = 100)
+    private String voterId;
+
+    @Column(name = "vote_time", nullable = false)
+    private LocalDateTime voteTime;
+
+    // Constructors
+    public Vote() {}
+
+    public Vote(Candidate candidate, String voterId) {
+        this.candidate = candidate;
+        this.voterId = voterId;
+        this.voteTime = LocalDateTime.now();  // Set the vote time to now
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Candidate getCandidate() {
+        return candidate;
+    }
+
+    public void setCandidate(Candidate candidate) {
+        this.candidate = candidate;
+    }
+
+    public String getVoterId() {
+        return voterId;
+    }
+
+    public void setVoterId(String voterId) {
+        this.voterId = voterId;
+    }
+
+    public LocalDateTime getVoteTime() {
+        return voteTime;
+    }
+
+    public void setVoteTime(LocalDateTime voteTime) {
+        this.voteTime = voteTime;
+    }
+}
