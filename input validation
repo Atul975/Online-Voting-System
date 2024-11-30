@@ -1,0 +1,42 @@
+import java.util.Scanner;
+
+public class OnlineVotingSystem {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        // Taking voter ID input from the user
+        System.out.println("Enter your Voter ID:");
+        String voterID = scanner.nextLine();
+
+        // Validate Voter ID
+        if (!isValidVoterID(voterID)) {
+            System.out.println("Invalid Voter ID. Please try again.");
+            return;
+        }
+
+        // Taking candidate choice input from the user
+        System.out.println("Enter the candidate number you want to vote for:");
+        int candidateNumber = scanner.nextInt();
+
+        // Validate candidate number
+        if (!isValidCandidateNumber(candidateNumber)) {
+            System.out.println("Invalid candidate number. Please try again.");
+            return;
+        }
+
+        // If both inputs are valid
+        System.out.println("Thank you for voting!");
+    }
+
+    // Method to validate Voter ID
+    public static boolean isValidVoterID(String voterID) {
+        // Example validation: Voter ID should be alphanumeric and 10 characters long
+        return voterID.matches("[a-zA-Z0-9]{10}");
+    }
+
+    // Method to validate candidate number
+    public static boolean isValidCandidateNumber(int candidateNumber) {
+        // Example validation: Candidate number should be between 1 and 5
+        return candidateNumber >= 1 && candidateNumber <= 5;
+    }
+}
