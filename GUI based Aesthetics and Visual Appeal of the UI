@@ -1,0 +1,150 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+
+public class OnlineVotingSystem {
+
+    private static HashMap<String, String> users = new HashMap<>();
+    private static HashMap<String, Integer> votes = new HashMap<>();
+    private static JFrame frame;
+
+    public static void main(String[] args) {
+        // Mock data for users and candidates
+        users.put("user1", "password1");
+        users.put("user2", "password2");
+        votes.put("Candidate A", 0);
+        votes.put("Candidate B", 0);
+        votes.put("Candidate C", 0);
+
+        // Launch the login screen
+        SwingUtilities.invokeLater(OnlineVotingSystem::createLoginScreen);
+    }
+
+    // Create Login Screen
+    private static void createLoginScreen() {
+        frame = new JFrame("Online Voting System");
+        frame.setSize(400, 300);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new GridBagLayout());
+        frame.getContentPane().setBackground(Color.WHITE);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Title
+        JLabel title = new JLabel("Online Voting System", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 16));
+        title.setForeground(new Color(50, 50, 50));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        frame.add(title, gbc);
+
+        // Username Label and Field
+        JLabel usernameLabel = new JLabel("Username:");
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        frame.add(usernameLabel, gbc);
+
+        JTextField usernameField = new JTextField(15);
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        frame.add(usernameField, gbc);
+
+        // Password Label and Field
+        JLabel passwordLabel = new JLabel("Password:");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        frame.add(passwordLabel, gbc);
+
+        JPasswordField passwordField = new JPasswordField(15);
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        frame.add(passwordField, gbc);
+
+        // Login Button
+        JButton loginButton = new JButton("Login");
+        loginButton.setBackground(new Color(76, 175, 80));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setFocusPainted(false);
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        frame.add(loginButton, gbc);
+
+        loginButton.addActionListener(e -> {
+            String username = usernameField.getText();
+            String password = new String(passwordField.getPassword());
+            if (users.containsKey(username) && users.get(username).equals(password)) {
+                createVotingScreen();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Invalid username or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        frame.setVisible(true);
+    }
+
+    // Create Voting Screen
+    private static void createVotingScreen() {
+        frame.getContentPane().removeAll();
+        frame.setLayout(new GridBagLayout());
+        frame.getContentPane().setBackground(Color.WHITE);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Title
+        JLabel title = new JLabel("Vote for Your Candidate", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 16));
+        title.setForeground(new Color(50, 50, 50));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        frame.add(title, gbc);
+
+        // Candidate Buttons
+        int row = 1;
+        for (String candidate : votes.keySet()) {
+            JButton voteButton = new JButton(candidate);
+            voteButton.setBackground(new Color(33, 150, 243));
+            voteButton.setForeground(Color.WHITE);
+            voteButton.setFocusPainted(false);
+            voteButton.addActionListener(e -> {
+                votes.put(candidate, votes.get(candidate) + 1);
+                JOptionPane.showMessageDialog(frame, "Your vote for " + candidate + " has been recorded!");
+            });
+            gbc.gridx = 0;
+            gbc.gridy = row++;
+            gbc.gridwidth = 2;
+            frame.add(voteButton, gbc);
+        }
+
+        // View Results Button
+        JButton resultsButton = new JButton("View Results");
+        resultsButton.setBackground(new Color(255, 152, 0));
+        resultsButton.setForeground(Color.WHITE);
+        resultsButton.setFocusPainted(false);
+        resultsButton.addActionListener(e -> showResults());
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        frame.add(resultsButton, gbc);
+
+        frame.revalidate();
+        frame.repaint();
+    }
+
+    // Show Results
+    private static void showResults() {
+        StringBuilder resultText = new StringBuilder("Voting Results:\n");
+        for (String candidate : votes.keySet()) {
+            resultText.append(candidate).append(": ").append(votes.get(candidate)).append(" votes\n");
+        }
+        JOptionPane.showMessageDialog(frame, resultText.toString(), "Results", JOptionPane.INFORMATION_MESSAGE);
+    }
+}
