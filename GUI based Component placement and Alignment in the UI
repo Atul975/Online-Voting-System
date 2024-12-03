@@ -1,0 +1,86 @@
+import javax.swing.*;
+import java.awt.*;
+
+public class ComponentAlignmentExample {
+
+    public static void main(String[] args) {
+        // Create the main frame
+        JFrame frame = new JFrame("Component Placement and Alignment");
+        frame.setSize(500, 400);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Set layout manager for precise alignment
+        frame.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        // Title Label
+        JLabel titleLabel = new JLabel("Aligned Components Example");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titleLabel.setForeground(new Color(33, 150, 243));
+        gbc.gridx = 0;               // Column 0
+        gbc.gridy = 0;               // Row 0
+        gbc.gridwidth = 2;           // Span 2 columns
+        gbc.insets = new Insets(10, 10, 20, 10);  // Top padding
+        gbc.anchor = GridBagConstraints.CENTER;  // Center alignment
+        frame.add(titleLabel, gbc);
+
+        // Username Label
+        JLabel usernameLabel = new JLabel("Username:");
+        usernameLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        gbc.gridx = 0;               // Column 0
+        gbc.gridy = 1;               // Row 1
+        gbc.gridwidth = 1;           // Span 1 column
+        gbc.insets = new Insets(10, 10, 10, 10); // Padding around the label
+        gbc.anchor = GridBagConstraints.EAST;   // Right alignment
+        frame.add(usernameLabel, gbc);
+
+        // Username Text Field
+        JTextField usernameField = new JTextField(15);
+        gbc.gridx = 1;               // Column 1
+        gbc.gridy = 1;               // Row 1
+        gbc.anchor = GridBagConstraints.WEST;   // Left alignment
+        frame.add(usernameField, gbc);
+
+        // Password Label
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setFont(new Font("Arial", Font.PLAIN, 14));
+        gbc.gridx = 0;               // Column 0
+        gbc.gridy = 2;               // Row 2
+        gbc.anchor = GridBagConstraints.EAST;   // Right alignment
+        frame.add(passwordLabel, gbc);
+
+        // Password Field
+        JPasswordField passwordField = new JPasswordField(15);
+        gbc.gridx = 1;               // Column 1
+        gbc.gridy = 2;               // Row 2
+        gbc.anchor = GridBagConstraints.WEST;   // Left alignment
+        frame.add(passwordField, gbc);
+
+        // Login Button
+        JButton loginButton = new JButton("Login");
+        loginButton.setBackground(new Color(76, 175, 80));
+        loginButton.setForeground(Color.WHITE);
+        loginButton.setFocusPainted(false);
+        gbc.gridx = 0;               // Column 0
+        gbc.gridy = 3;               // Row 3
+        gbc.gridwidth = 2;           // Span 2 columns
+        gbc.insets = new Insets(20, 10, 10, 10); // Padding for spacing
+        gbc.anchor = GridBagConstraints.CENTER; // Center alignment
+        frame.add(loginButton, gbc);
+
+        // Footer Label
+        JLabel footerLabel = new JLabel("Example Footer Text");
+        footerLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+        footerLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        footerLabel.setForeground(new Color(128, 128, 128));
+        gbc.gridx = 0;               // Column 0
+        gbc.gridy = 4;               // Row 4
+        gbc.gridwidth = 2;           // Span 2 columns
+        gbc.insets = new Insets(30, 10, 10, 10); // Padding at the bottom
+        frame.add(footerLabel, gbc);
+
+        // Display the frame
+        frame.setVisible(true);
+    }
+}
