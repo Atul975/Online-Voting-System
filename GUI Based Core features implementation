@@ -1,0 +1,104 @@
+// VotingSystemApplication.java (Backend - Spring Boot)
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.*;
+
+import javax.persistence.*;
+import java.util.List;
+import java.util.Optional;
+
+@SpringBootApplication
+public class VotingSystemApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(VotingSystemApplication.class, args);
+    }
+}
+
+@Entity
+class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String username;
+    private String password;
+    private boolean isVoted = false;
+
+    // Getters and Setters
+}
+
+@Entity
+class Candidate {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String name;
+    private int votes = 0;
+
+    // Getters and Setters
+}
+
+@Repository
+interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByUsername(String username);
+}
+
+@Repository
+interface CandidateRepository extends JpaRepository<Candidate, Long> {
+    List<Candidate> findAll();
+}
+
+@RestController
+@RequestMapping("/api")
+class VotingController {
+
+    private final UserRepository userRepository;
+    private final CandidateRepository candidateRepository;
+
+    public VotingController(UserRepository userRepository, CandidateRepository candidateRepository) {
+        this.userRepository = userRepository;
+        this.candidateRepository = candidateRepository;
+    }
+
+    @PostMapping("/register")
+    public String register(@RequestBody User user) {
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            return "User already exists";
+        }
+        userRepository.save(user);
+        return "Registration successful";
+    }
+
+    @PostMapping("/login")
+    public String login(@RequestBody User user) {
+        Optional<User> existingUser = userRepository.findByUsername(user.getUsername());
+        if (existingUser.isPresent() && existingUser.get().getPassword().equals(user.getPassword())) {
+            return "Login successful";
+        }
+        return "Invalid credentials";
+    }
+
+    @PostMapping("/vote")
+    public String vote(@RequestParam Long userId, @RequestParam Long candidateId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty() || user.get().isVoted()) {
+            return "User has already voted";
+        }
+
+        Optional<Candidate> candidate = candidateRepository.findById(candidateId);
+        if (candidate.isEmpty()) {
+            return "Candidate not found";
+        }
+
+        candidate.get().setVotes(candidate.get().getVotes() + 1);
+        user.get().setVoted(true);
+        candidateRepository.save(candidate.get());
+        userRepository.save(user.get());
+
+        return "Vote cast successfully";
+    }
+
+    @GetMapping("/results")
+    public List<Candidate> getResults() {
+        return candidateRepository.findAll();
+    }
+}
