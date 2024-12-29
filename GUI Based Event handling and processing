@@ -1,0 +1,220 @@
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import javafx.scene.paint.Color;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.*;
+import java.util.List;
+
+public class VotingApp extends Application {
+
+    // UI Components
+    private TextField usernameField, passwordField;
+    private Button loginButton, registerButton, voteButton, viewResultsButton;
+    private ChoiceBox<String> candidateChoiceBox;
+    private Label errorLabel;
+    private VBox loginBox, voteBox, resultsBox, mainBox;
+    private Scene mainScene;
+    private Stage primaryStage;
+
+    @Override
+    public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+
+        // Error label for displaying error messages
+        errorLabel = new Label();
+        errorLabel.setTextFill(Color.RED);
+
+        // Login Form
+        usernameField = new TextField();
+        passwordField = new PasswordField();
+        loginButton = new Button("Login");
+        registerButton = new Button("Register");
+
+        loginButton.setOnAction(e -> login()); // Handle login button click
+        registerButton.setOnAction(e -> showRegisterForm()); // Handle register button click
+
+        loginBox = new VBox(10, new Label("Username:"), usernameField, new Label("Password:"), passwordField, loginButton, registerButton, errorLabel);
+
+        // Vote Form (hidden initially, only visible after login)
+        candidateChoiceBox = new ChoiceBox<>();
+        voteButton = new Button("Vote");
+        voteButton.setOnAction(e -> castVote()); // Handle vote button click
+        voteButton.setDisable(true); // Initially disabled
+
+        voteBox = new VBox(10, new Label("Select Candidate:"), candidateChoiceBox, voteButton);
+
+        // Results Form (hidden initially)
+        viewResultsButton = new Button("View Results");
+        viewResultsButton.setOnAction(e -> viewResults()); // Handle view results button click
+        resultsBox = new VBox(10, viewResultsButton);
+
+        // Main Box combining all the components
+        mainBox = new VBox(20, loginBox, voteBox, resultsBox);
+        mainScene = new Scene(mainBox, 400, 400);
+
+        primaryStage.setScene(mainScene);
+        primaryStage.setTitle("Online Voting System");
+        primaryStage.show();
+    }
+
+    // Login Method
+    private void login() {
+        errorLabel.setText(""); // Clear previous errors
+
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+
+        // Event-driven processing: Validate input fields before login
+        if (username.isEmpty() || password.isEmpty()) {
+            errorLabel.setText("Please fill in both fields.");
+            return;
+        }
+
+        String data = "{\"username\":\"" + username + "\", \"password\":\"" + password + "\"}";
+        String response = sendPostRequest("http://localhost:8080/api/login", data);
+
+        // Event-driven: After login attempt, show appropriate response
+        if (response.contains("Login successful")) {
+            // Hide login box and show vote form
+            loginBox.setVisible(false);
+            voteBox.setVisible(true);
+
+            // Enable vote button and load candidates
+            voteButton.setDisable(false);
+            loadCandidates();
+
+            // Show results button
+            resultsBox.setVisible(true);
+        } else {
+            errorLabel.setText(response); // Display login error
+        }
+    }
+
+    // Register Method - Switching to Registration Form
+    private void showRegisterForm() {
+        // You can create another view for registration or handle it here as needed
+        errorLabel.setText(""); // Clear previous errors
+        String username = usernameField.getText();
+        String password = passwordField.getText();
+
+        if (username.isEmpty() || password.isEmpty()) {
+            errorLabel.setText("Please fill in both fields.");
+            return;
+        }
+
+        String data = "{\"username\":\"" + username + "\", \"password\":\"" + password + "\"}";
+        String response = sendPostRequest("http://localhost:8080/api/register", data);
+
+        // Event-driven: After registration attempt, show appropriate response
+        if (response.contains("Registration successful")) {
+            errorLabel.setText("Registration successful. Please log in.");
+        } else {
+            errorLabel.setText(response); // Display registration error
+        }
+    }
+
+    // Cast Vote Method
+    private void castVote() {
+        errorLabel.setText(""); // Clear any previous errors
+
+        Long candidateId = (long) (candidateChoiceBox.getSelectionModel().getSelectedIndex() + 1); // Selecting based on index
+        if (candidateId == 0) {
+            errorLabel.setText("Please select a candidate.");
+            return;
+        }
+
+        Long userId = 1L; // Placeholder user ID (to be handled properly after login)
+
+        String data = "userId=" + userId + "&candidateId=" + candidateId;
+        String response = sendPostRequest("http://localhost:8080/api/vote", data);
+
+        // Event-driven: After voting attempt, show appropriate response
+        if (response.contains("Vote cast successfully")) {
+            errorLabel.setText("Vote cast successfully.");
+        } else {
+            errorLabel.setText(response); // Display voting error
+        }
+    }
+
+    // View Results Method
+    private void viewResults() {
+        String response = sendGetRequest("http://localhost:8080/api/results");
+
+        // Event-driven: Display results or error
+        if (response.contains("Error")) {
+            errorLabel.setText(response); // Display error
+        } else {
+            displayResults(response); // Display the results (or parse and format them)
+        }
+    }
+
+    // Utility to send POST request
+    private String sendPostRequest(String urlStr, String data) {
+        try {
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setDoOutput(true);
+
+            try (OutputStream os = conn.getOutputStream()) {
+                byte[] input = data.getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                return response.toString();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Error: " + e.getMessage(); // Return error message
+        }
+    }
+
+    // Utility to send GET request
+    private String sendGetRequest(String urlStr) {
+        try {
+            URL url = new URL(urlStr);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                StringBuilder response = new StringBuilder();
+                String responseLine;
+                while ((responseLine = br.readLine()) != null) {
+                    response.append(responseLine.trim());
+                }
+                return response.toString();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Error: " + e.getMessage(); // Return error message
+        }
+    }
+
+    // Load Candidates into ChoiceBox
+    private void loadCandidates() {
+        // Simulate loading candidates (mock data here, replace with backend call)
+        candidateChoiceBox.getItems().clear();
+        candidateChoiceBox.getItems().addAll("Candidate 1", "Candidate 2", "Candidate 3");
+    }
+
+    // Display Results (mock method)
+    private void displayResults(String response) {
+        // In real-world cases, parse and display results dynamically.
+        // Here, we'll just print them as a placeholder.
+        System.out.println("Voting Results: " + response);
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
