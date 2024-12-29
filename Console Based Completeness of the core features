@@ -1,0 +1,205 @@
+import java.util.*;
+
+public class CompleteVotingSystem {
+
+    // Class representing a Voter
+    static class Voter {
+        private String voterId;
+        private boolean hasVoted;
+
+        public Voter(String voterId) {
+            this.voterId = voterId;
+            this.hasVoted = false;
+        }
+
+        public String getVoterId() {
+            return voterId;
+        }
+
+        public boolean hasVoted() {
+            return hasVoted;
+        }
+
+        public void markAsVoted() {
+            hasVoted = true;
+        }
+    }
+
+    // Voting System Class
+    static class VotingSystem {
+        private Map<String, Voter> voterRegistry;   // Registered voters
+        private Map<String, Integer> candidates;   // Candidates with votes
+        private int totalVotes;                    // Total number of votes cast
+
+        public VotingSystem() {
+            this.voterRegistry = new HashMap<>();
+            this.candidates = new HashMap<>();
+            this.totalVotes = 0;
+        }
+
+        // Register a voter
+        public void registerVoter(String voterId) {
+            if (voterId == null || voterId.trim().isEmpty()) {
+                printError("Voter ID cannot be empty.");
+                return;
+            }
+
+            if (voterRegistry.containsKey(voterId)) {
+                printError("Voter already registered: " + voterId);
+            } else {
+                voterRegistry.put(voterId, new Voter(voterId));
+                printSuccess("Voter registered successfully: " + voterId);
+            }
+        }
+
+        // Add a candidate
+        public void addCandidate(String candidateName) {
+            if (candidateName == null || candidateName.trim().isEmpty()) {
+                printError("Candidate name cannot be empty.");
+                return;
+            }
+
+            if (candidates.containsKey(candidateName)) {
+                printError("Candidate already exists: " + candidateName);
+            } else {
+                candidates.put(candidateName, 0);
+                printSuccess("Candidate added successfully: " + candidateName);
+            }
+        }
+
+        // Cast a vote
+        public void castVote(String voterId, String candidateName) {
+            if (!isValidVoter(voterId) || !isValidCandidate(candidateName)) {
+                return;
+            }
+
+            Voter voter = voterRegistry.get(voterId);
+            if (voter.hasVoted()) {
+                printError("Voter has already cast their vote: " + voterId);
+                return;
+            }
+
+            // Cast the vote
+            voter.markAsVoted();
+            candidates.put(candidateName, candidates.get(candidateName) + 1);
+            totalVotes++;
+            printSuccess("Vote cast successfully by " + voterId + " for " + candidateName + ".");
+        }
+
+        // Display voting results
+        public void displayResults() {
+            if (candidates.isEmpty()) {
+                printError("No candidates available to display results.");
+                return;
+            }
+
+            System.out.println("\nVoting Results:");
+            for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
+                System.out.printf("%s: %d votes%n", entry.getKey(), entry.getValue());
+            }
+            System.out.printf("Total Votes Cast: %d%n", totalVotes);
+        }
+
+        // Check voter registration
+        private boolean isValidVoter(String voterId) {
+            if (voterId == null || voterId.trim().isEmpty()) {
+                printError("Voter ID cannot be empty.");
+                return false;
+            }
+
+            if (!voterRegistry.containsKey(voterId)) {
+                printError("Voter not registered: " + voterId);
+                return false;
+            }
+
+            return true;
+        }
+
+        // Check candidate existence
+        private boolean isValidCandidate(String candidateName) {
+            if (candidateName == null || candidateName.trim().isEmpty()) {
+                printError("Candidate name cannot be empty.");
+                return false;
+            }
+
+            if (!candidates.containsKey(candidateName)) {
+                printError("Candidate not found: " + candidateName);
+                return false;
+            }
+
+            return true;
+        }
+
+        // Utility methods for printing messages
+        private void printSuccess(String message) {
+            System.out.println("Success: " + message);
+        }
+
+        private void printError(String message) {
+            System.out.println("Error: " + message);
+        }
+    }
+
+    // Main method to handle user interaction
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        VotingSystem votingSystem = new VotingSystem();
+
+        System.out.println("=== Complete Online Voting System ===");
+        while (true) {
+            try {
+                printMenu();
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1:
+                        System.out.print("Enter Voter ID: ");
+                        String voterId = scanner.nextLine();
+                        votingSystem.registerVoter(voterId);
+                        break;
+
+                    case 2:
+                        System.out.print("Enter Candidate Name: ");
+                        String candidateName = scanner.nextLine();
+                        votingSystem.addCandidate(candidateName);
+                        break;
+
+                    case 3:
+                        System.out.print("Enter Voter ID: ");
+                        voterId = scanner.nextLine();
+                        System.out.print("Enter Candidate Name: ");
+                        candidateName = scanner.nextLine();
+                        votingSystem.castVote(voterId, candidateName);
+                        break;
+
+                    case 4:
+                        votingSystem.displayResults();
+                        break;
+
+                    case 5:
+                        System.out.println("Thank you for using the voting system. Goodbye!");
+                        scanner.close();
+                        return;
+
+                    default: 
+                        System.out.println("Error: Invalid option. Please choose a valid menu option.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Error: Invalid input. Please enter a valid number.");
+                scanner.nextLine(); // Clear invalid input
+            }
+        }
+    }
+
+    // Print the main menu
+    private static void printMenu() {
+        System.out.println("\nMenu:");
+        System.out.println("1. Register Voter");
+        System.out.println("2. Add Candidate");
+        System.out.println("3. Cast Vote");
+        System.out.println("4. Display Results");
+        System.out.println("5. Exit");
+        System.out.print("Choose an option: ");
+    }
+}
