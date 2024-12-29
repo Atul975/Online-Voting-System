@@ -1,0 +1,119 @@
+import java.util.*;
+
+public class CoreVotingSystem {
+    // Core class to manage voting system
+    static class VotingSystem {
+        private Map<String, Boolean> voters; // Tracks if a voter has voted
+        private Map<String, Integer> candidates; // Tracks votes for each candidate
+
+        public VotingSystem() {
+            voters = new HashMap<>();
+            candidates = new HashMap<>();
+        }
+
+        // Register a voter
+        public void registerVoter(String voterId) {
+            if (voters.containsKey(voterId)) {
+                System.out.println("Voter already registered: " + voterId);
+            } else {
+                voters.put(voterId, false);
+                System.out.println("Voter registered successfully: " + voterId);
+            }
+        }
+
+        // Add a candidate
+        public void addCandidate(String candidateName) {
+            if (candidates.containsKey(candidateName)) {
+                System.out.println("Candidate already exists: " + candidateName);
+            } else {
+                candidates.put(candidateName, 0);
+                System.out.println("Candidate added successfully: " + candidateName);
+            }
+        }
+
+        // Cast a vote
+        public void castVote(String voterId, String candidateName) {
+            if (!voters.containsKey(voterId)) {
+                System.out.println("Voter ID not registered.");
+                return;
+            }
+
+            if (voters.get(voterId)) {
+                System.out.println("Voter has already cast their vote: " + voterId);
+                return;
+            }
+
+            if (!candidates.containsKey(candidateName)) {
+                System.out.println("Candidate does not exist: " + candidateName);
+                return;
+            }
+
+            // Mark voter as having voted and increment candidate's vote count
+            voters.put(voterId, true);
+            candidates.put(candidateName, candidates.get(candidateName) + 1);
+            System.out.println("Vote cast successfully by " + voterId + " for " + candidateName + ".");
+        }
+
+        // Display results
+        public void displayResults() {
+            System.out.println("\nVoting Results:");
+            for (Map.Entry<String, Integer> entry : candidates.entrySet()) {
+                System.out.println(entry.getKey() + ": " + entry.getValue() + " votes");
+            }
+        }
+    }
+
+    // Main function to demonstrate core features
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        VotingSystem votingSystem = new VotingSystem();
+
+        System.out.println("=== Core Voting System ===");
+        while (true) {
+            System.out.println("\nOptions:");
+            System.out.println("1. Register Voter");
+            System.out.println("2. Add Candidate");
+            System.out.println("3. Cast Vote");
+            System.out.println("4. Display Results");
+            System.out.println("5. Exit");
+            System.out.print("Select an option: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    System.out.print("Enter Voter ID: ");
+                    String voterId = scanner.nextLine();
+                    votingSystem.registerVoter(voterId);
+                    break;
+
+                case 2:
+                    System.out.print("Enter Candidate Name: ");
+                    String candidateName = scanner.nextLine();
+                    votingSystem.addCandidate(candidateName);
+                    break;
+
+                case 3:
+                    System.out.print("Enter Voter ID: ");
+                    voterId = scanner.nextLine();
+                    System.out.print("Enter Candidate Name: ");
+                    candidateName = scanner.nextLine();
+                    votingSystem.castVote(voterId, candidateName);
+                    break;
+
+                case 4:
+                    votingSystem.displayResults();
+                    break;
+
+                case 5:
+                    System.out.println("Exiting system. Thank you!");
+                    scanner.close();
+                    return;
+
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+}
