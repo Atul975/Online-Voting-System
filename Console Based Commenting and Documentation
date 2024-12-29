@@ -1,0 +1,288 @@
+import java.util.*;
+
+/**
+ * AdvancedVotingSystem is an implementation of an online voting system.
+ * It includes features such as voter registration, candidate management,
+ * voting, result display, and audit trails.
+ */
+public class AdvancedVotingSystem {
+
+    /**
+     * Represents a voter in the system, containing voter ID and voting status.
+     */
+    static class Voter {
+        private final String voterId; // Unique ID of the voter
+        private boolean hasVoted;    // Voting status of the voter
+
+        /**
+         * Constructor to create a Voter instance.
+         *
+         * @param voterId The unique ID of the voter.
+         */
+        public Voter(String voterId) {
+            this.voterId = voterId;
+            this.hasVoted = false; // Initially, the voter hasn't voted
+        }
+
+        public String getVoterId() {
+            return voterId;
+        }
+
+        public boolean hasVoted() {
+            return hasVoted;
+        }
+
+        public void markAsVoted() {
+            hasVoted = true; // Mark the voter as having voted
+        }
+    }
+
+    /**
+     * The core voting system logic, including registration, voting, and result management.
+     */
+    static class VotingSystem {
+        private final Map<String, Voter> voterRegistry;  // Stores registered voters
+        private final Map<String, Integer> candidates;  // Stores candidates and their vote counts
+        private final Map<String, Set<String>> voteAuditTrail; // Maps voter IDs to the candidates they voted for
+
+        /**
+         * Constructor to initialize the voting system.
+         */
+        public VotingSystem() {
+            this.voterRegistry = new HashMap<>();
+            this.candidates = new HashMap<>();
+            this.voteAuditTrail = new HashMap<>();
+        }
+
+        /**
+         * Registers a voter with a unique ID.
+         *
+         * @param voterId The unique ID of the voter to register.
+         */
+        public void registerVoter(String voterId) {
+            if (isNullOrEmpty(voterId)) {
+                logError("Voter ID cannot be empty.");
+                return;
+            }
+
+            if (voterRegistry.containsKey(voterId)) {
+                logError("Voter ID already registered: " + voterId);
+                return;
+            }
+
+            voterRegistry.put(voterId, new Voter(voterId));
+            logSuccess("Voter registered successfully: " + voterId);
+        }
+
+        /**
+         * Adds a candidate to the voting system.
+         *
+         * @param candidateName The name of the candidate to add.
+         */
+        public void addCandidate(String candidateName) {
+            if (isNullOrEmpty(candidateName)) {
+                logError("Candidate name cannot be empty.");
+                return;
+            }
+
+            if (candidates.containsKey(candidateName)) {
+                logError("Candidate already exists: " + candidateName);
+                return;
+            }
+
+            candidates.put(candidateName, 0);
+            logSuccess("Candidate added successfully: " + candidateName);
+        }
+
+        /**
+         * Allows a registered voter to cast a vote for a candidate.
+         *
+         * @param voterId       The ID of the voter casting the vote.
+         * @param candidateName The name of the candidate being voted for.
+         */
+        public void castVote(String voterId, String candidateName) {
+            if (!isValidVoter(voterId) || !isValidCandidate(candidateName)) return;
+
+            Voter voter = voterRegistry.get(voterId);
+            if (voter.hasVoted()) {
+                logError("Voter has already voted: " + voterId);
+                return;
+            }
+
+            // Mark the vote and update records
+            voter.markAsVoted();
+            candidates.put(candidateName, candidates.get(candidateName) + 1);
+            voteAuditTrail.computeIfAbsent(voterId, k -> new HashSet<>()).add(candidateName);
+
+            logSuccess("Vote cast successfully for " + candidateName + " by voter " + voterId);
+        }
+
+        /**
+         * Displays the current voting results, showing each candidate and their vote count.
+         */
+        public void displayResults() {
+            if (candidates.isEmpty()) {
+                logError("No candidates to display results.");
+                return;
+            }
+
+            System.out.println("\nVoting Results:");
+            candidates.forEach((candidate, votes) ->
+                System.out.printf("Candidate: %s | Votes: %d%n", candidate, votes)
+            );
+            System.out.println("Total Votes Cast: " + getTotalVotes());
+        }
+
+        /**
+         * Displays the audit trail of votes, mapping each voter to the candidates they voted for.
+         */
+        public void displayAuditTrail() {
+            if (voteAuditTrail.isEmpty()) {
+                logError("No audit trail available.");
+                return;
+            }
+
+            System.out.println("\nAudit Trail:");
+            voteAuditTrail.forEach((voterId, candidates) ->
+                System.out.printf("Voter ID: %s | Voted For: %s%n", voterId, String.join(", ", candidates))
+            );
+        }
+
+        /**
+         * Calculates the total number of votes cast in the system.
+         *
+         * @return The total vote count.
+         */
+        private int getTotalVotes() {
+            return candidates.values().stream().mapToInt(Integer::intValue).sum();
+        }
+
+        /**
+         * Validates if the voter ID exists in the system.
+         *
+         * @param voterId The voter ID to validate.
+         * @return True if valid, false otherwise.
+         */
+        private boolean isValidVoter(String voterId) {
+            if (isNullOrEmpty(voterId)) {
+                logError("Voter ID cannot be empty.");
+                return false;
+            }
+
+            if (!voterRegistry.containsKey(voterId)) {
+                logError("Voter ID not registered: " + voterId);
+                return false;
+            }
+
+            return true;
+        }
+
+        /**
+         * Validates if the candidate name exists in the system.
+         *
+         * @param candidateName The candidate name to validate.
+         * @return True if valid, false otherwise.
+         */
+        private boolean isValidCandidate(String candidateName) {
+            if (isNullOrEmpty(candidateName)) {
+                logError("Candidate name cannot be empty.");
+                return false;
+            }
+
+            if (!candidates.containsKey(candidateName)) {
+                logError("Candidate not found: " + candidateName);
+                return false;
+            }
+
+            return true;
+        }
+
+        /**
+         * Utility method to check if a string is null or empty.
+         *
+         * @param str The string to check.
+         * @return True if null or empty, false otherwise.
+         */
+        private boolean isNullOrEmpty(String str) {
+            return str == null || str.trim().isEmpty();
+        }
+
+        /**
+         * Logs a success message to the console.
+         *
+         * @param message The success message.
+         */
+        private void logSuccess(String message) {
+            System.out.println("[SUCCESS] " + message);
+        }
+
+        /**
+         * Logs an error message to the console.
+         *
+         * @param message The error message.
+         */
+        private void logError(String message) {
+            System.out.println("[ERROR] " + message);
+        }
+    }
+
+    /**
+     * Main method to interact with the voting system through a menu-driven interface.
+     */
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        VotingSystem votingSystem = new VotingSystem();
+
+        System.out.println("=== Advanced Voting System ===");
+        while (true) {
+            try {
+                printMenu();
+                int choice = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                switch (choice) {
+                    case 1 -> {
+                        System.out.print("Enter Voter ID: ");
+                        votingSystem.registerVoter(scanner.nextLine());
+                    }
+                    case 2 -> {
+                        System.out.print("Enter Candidate Name: ");
+                        votingSystem.addCandidate(scanner.nextLine());
+                    }
+                    case 3 -> {
+                        System.out.print("Enter Voter ID: ");
+                        String voterId = scanner.nextLine();
+                        System.out.print("Enter Candidate Name: ");
+                        String candidateName = scanner.nextLine();
+                        votingSystem.castVote(voterId, candidateName);
+                    }
+                    case 4 -> votingSystem.displayResults();
+                    case 5 -> votingSystem.displayAuditTrail();
+                    case 6 -> {
+                        System.out.println("Exiting the system. Thank you!");
+                        scanner.close();
+                        return;
+                    }
+                    default -> System.out.println("[ERROR] Invalid option. Try again.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("[ERROR] Invalid input. Enter a valid number.");
+                scanner.nextLine(); // Clear invalid input
+            }
+        }
+    }
+
+    /**
+     * Prints the main menu of the system.
+     */
+    private static void printMenu() {
+        System.out.println("\nMenu:");
+        System.out.println("1. Register Voter");
+        System.out.println("2. Add Candidate");
+        System.out.println("3. Cast Vote");
+        System.out.println("4. Display Results");
+        System.out.println("5. Display Audit Trail");
+        System.out.println("6. Exit");
+        System.out.print("Choose an option: ");
+    }
+}
